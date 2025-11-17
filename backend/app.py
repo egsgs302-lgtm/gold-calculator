@@ -19,7 +19,7 @@ app.add_middleware(
 # Serve the frontend HTML file
 @app.get("/")
 def home():
-    return FileResponse("index.html")
+    return FileResponse("index.html")  # works because file is in same folder
 
 @app.get("/gold")
 def get_gold_price(date: str, amount_try: float):
