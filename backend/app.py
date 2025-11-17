@@ -1,13 +1,25 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
 
 app = FastAPI()
 
+# (Optional) Allow CORS if you ever host frontend separately
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Serve the frontend HTML file
 @app.get("/")
 def home():
-    return {"message": "Gold Calculator backend is running!"}
+    return FileResponse("index.html")
 
 @app.get("/gold")
 def get_gold_price(date: str, amount_try: float):
@@ -15,9 +27,7 @@ def get_gold_price(date: str, amount_try: float):
     Calculate how many grams of gold you could buy with a given amount of TRY
     on a specific date. Date must be in dd/mm/yyyy format.
     """
-
     try:
-        # Parse the input date
         dt = datetime.strptime(date, "%d/%m/%Y")
 
         # 1. Gold price in USD per ounce (Gold Futures)
