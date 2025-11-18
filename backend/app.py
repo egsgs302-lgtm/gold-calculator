@@ -59,5 +59,6 @@ def get_gold_price(date: str, amount_try: float):
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Date must be in dd/mm/yyyy format")
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
