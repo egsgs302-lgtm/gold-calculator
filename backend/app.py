@@ -6,24 +6,24 @@ import os
 
 app = FastAPI()
 
-# Serve the frontend
 @app.get("/")
 def home():
     return FileResponse("index.html")
 
-
 def get_closest_price(ticker, dt):
-    """Find closest available price within 7 days back."""
-    for i in range(7):
-        check_date = dt - timedelta(days=i)
+    """Find closest available price by searching backwards indefinitely until found."""
+    days_back = 0
+    while True:
+        check_date = dt - timedelta(days=days_back)
         data = ticker.history(
             start=check_date.strftime("%Y-%m-%d"),
             end=(check_date + timedelta(days=1)).strftime("%Y-%m-%d")
         )
         if not data.empty:
             return data["Close"].iloc[0], check_date.strftime("%d/%m/%Y")
-    raise HTTPException(status_code=404, detail="No data found within 7 days")
-
+        days_back += 1
+        if days_back > 365*5:  # safety stop after 5 years back
+            raise HTTPException(status_code=404, detail="No data found in last 5 years")
 
 @app.get("/gold")
 def get_gold_price(date: str, amount_try: float):
@@ -39,23 +39,15 @@ def get_gold_price(date: str, amount_try: float):
         # Convert to TRY/g
         price_per_gram = (gold_price / 31.1035) * usdtry_price
 
-        # Apply +3% markup
-        grams = (amount_try * 1.03) / price_per_gram
+        # Apply +3% markup to price
+        price_per_gram_with_markup = price_per_gram * 1.03
 
-        # Build 10-year history (Jan 1 each year)
-        history = []
-        for year in range(dt.year - 10, dt.year + 1):
-            jan1 = datetime(year, 1, 1)
-            g_price, g_date = get_closest_price(yf.Ticker("GC=F"), jan1)
-            u_price, u_date = get_closest_price(yf.Ticker("USDTRY=X"), jan1)
-            ppg = (g_price / 31.1035) * u_price
-            history.append({"year": year, "date": g_date, "price_per_gram": ppg})
+        grams = amount_try / price_per_gram_with_markup
 
         return {
             "date": date,
             "grams": grams,
-            "price_per_gram": price_per_gram,
-            "history": history
+            "price_per_gram": price_per_gram_with_markup
         }
 
     except ValueError:
