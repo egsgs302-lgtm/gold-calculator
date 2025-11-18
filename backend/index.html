@@ -2,39 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gold Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
-    h1 { color: #333; }
-    label { display: block; margin-top: 10px; }
-    input { padding: 8px; margin-top: 5px; width: 200px; }
-    button { margin-top: 15px; padding: 10px 20px; background: #0078d7; color: white; border: none; cursor: pointer; }
-    button:hover { background: #005a9e; }
-    #result { margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #fdf6e3, #f5deb3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+    .form-group { margin-bottom: 15px; }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 12px;
+      background: #d4af37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    button:hover { background: #b8860b; }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fdf6e3;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    .scrolling-text {
+      margin-top: 20px;
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+    .scrolling-text span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll 25s linear infinite;
+    }
+    @keyframes scroll {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+    .usdc {
+      margin-top: 15px;
+      font-size: 13px;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
-  <h1>Gold Calculator</h1>
-  <form id="goldForm">
-    <label for="date">Date (dd/mm/yyyy):</label>
-    <input type="text" id="date" placeholder="17/11/2025" required>
+  <div class="card">
+    <form id="goldForm">
+      <div class="form-group">
+        <input type="date" id="date" required>
+      </div>
+      <div class="form-group">
+        <input type="number" id="amount" placeholder="TRY" required>
+      </div>
+      <button type="submit"><i class="fas fa-calculator"></i></button>
+    </form>
+    <div id="result"></div>
 
-    <label for="amount">Amount in TRY:</label>
-    <input type="number" id="amount" placeholder="1000" required>
 
-    <button type="submit">Calculate</button>
-  </form>
 
-  <div id="result"></div>
+    <div class="usdc">
+      💸 USDC: <code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
+    </div>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
   <script>
     const form = document.getElementById("goldForm");
     const resultDiv = document.getElementById("result");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const date = document.getElementById("date").value;
+      const dateInput = document.getElementById("date").value;
       const amount = document.getElementById("amount").value;
+      const date = dateInput.split("-").reverse().join("/");
+
+      resultDiv.innerHTML = "⏳...";
 
       try {
         const response = await fetch(`/gold?date=${encodeURIComponent(date)}&amount_try=${amount}`);
@@ -42,16 +107,14 @@
 
         if (response.ok) {
           resultDiv.innerHTML = `
-            <h3>Result</h3>
-            <p><strong>Date:</strong> ${data.date}</p>
-            <p><strong>Price per gram:</strong> ${data.price_per_gram.toFixed(2)} TRY</p>
-            <p><strong>Grams you can buy:</strong> ${data.grams.toFixed(4)}</p>
+            <p>📅 : ${data.date}</p>
+            <p>⚖️ ${data.grams.toFixed(2)} g</p>
           `;
         } else {
-          resultDiv.innerHTML = `<p style="color:red;">Error: ${data.detail}</p>`;
+          resultDiv.innerHTML = `<p style="color:red;">❌ ${data.detail}</p>`;
         }
       } catch (err) {
-        resultDiv.innerHTML = `<p style="color:red;">Request failed: ${err.message}</p>`;
+        resultDiv.innerHTML = `<p style="color:red;">❌ Request failed: ${err.message}</p>`;
       }
     });
   </script>
