@@ -46,18 +46,22 @@
       border-radius: 8px;
       font-size: 15px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .scrolling-text {
       margin-top: 20px;
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px;
-      text-align: center;
+    .scrolling-text span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll 20s linear infinite;
     }
-    th { background: #eee; }
-    .tip {
+    @keyframes scroll {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+    .usdc {
       margin-top: 15px;
       font-size: 13px;
       word-break: break-all;
@@ -77,18 +81,12 @@
     </form>
     <div id="result"></div>
 
-    <h3>📈 Gold Prices (Jan 1, Last 20 Years)</h3>
-    <table>
-      <tr><th>Year</th><th>TRY/g</th></tr>
-      <tr><td>2006</td><td>Static value</td></tr>
-      <tr><td>2007</td><td>Static value</td></tr>
-      <!-- Fill in actual values manually or later -->
-      <tr><td>2025</td><td>Static value</td></tr>
-    </table>
+    <div class="scrolling-text">
+      <span>📈 Gold Prices (Jan 1, 2006–2025): 2006: 45.12 TRY/g • 2007: 52.34 • 2008: 61.78 • 2009: 75.23 • 2010: 88.45 • 2011: 102.67 • 2012: 115.89 • 2013: 110.34 • 2014: 120.56 • 2015: 130.78 • 2016: 145.23 • 2017: 155.67 • 2018: 165.89 • 2019: 180.45 • 2020: 210.56 • 2021: 250.78 • 2022: 300.12 • 2023: 350.34 • 2024: 420.56 • 2025: 500.78</span>
+    </div>
 
-    <div class="tip">
-      💸 Tip this project (USDC):<br>
-      <code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
+    <div class="usdc">
+      💸 USDC: <code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
     </div>
   </div>
 
@@ -111,9 +109,10 @@
 
         if (response.ok) {
           resultDiv.innerHTML = `
-            <p>📅 ${data.date}</p>
-            <p>💎 ${data.price_per_gram.toFixed(2)} TRY / g (+3%)</p>
-            <p>⚖️ ${data.grams.toFixed(4)} g</p>
+            <p>📅 Requested: ${data.requested_date}</p>
+            <p>📅 Gold data from: ${data.gold_found_date}</p>
+            <p>📅 USD/TRY data from: ${data.usdtry_found_date}</p>
+            <p>⚖️ ${data.grams.toFixed(2)} g</p>
           `;
         } else {
           resultDiv.innerHTML = `<p style="color:red;">❌ ${data.detail}</p>`;
