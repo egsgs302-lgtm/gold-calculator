@@ -76,7 +76,7 @@
     <div id="result"></div>
 
     <div class="usdc">
-      💸USDC:<code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
+      USDC:<code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
     </div>
   </div>
 
@@ -91,7 +91,7 @@
       const amount = document.getElementById("amount").value;
       const date = dateInput.split("-").reverse().join("/");
 
-      resultDiv.innerHTML = "⏳ Calculating...";
+      resultDiv.innerHTML = "⏳ ...";
 
       try {
         const response = await fetch(`/gold?date=${encodeURIComponent(date)}&amount_try=${amount}`);
