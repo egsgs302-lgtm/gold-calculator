@@ -17,13 +17,10 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 360px;
+      width: 400px;
       text-align: center;
     }
-    .form-group {
-      margin-bottom: 15px;
-      position: relative;
-    }
+    .form-group { margin-bottom: 15px; }
     input {
       width: 100%;
       padding: 10px;
@@ -39,7 +36,7 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
     }
     button:hover { background: #b8860b; }
     #result {
@@ -52,7 +49,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 20px;
     }
     th, td {
       border: 1px solid #ddd;
@@ -76,15 +73,26 @@
       <div class="form-group">
         <input type="number" id="amount" placeholder="TRY" required>
       </div>
-      <button type="submit">💰</button>
+      <button type="submit"><i class="fas fa-calculator"></i></button>
     </form>
     <div id="result"></div>
+
+    <h3>📈 Gold Prices (Jan 1, Last 20 Years)</h3>
+    <table>
+      <tr><th>Year</th><th>TRY/g</th></tr>
+      <tr><td>2006</td><td>Static value</td></tr>
+      <tr><td>2007</td><td>Static value</td></tr>
+      <!-- Fill in actual values manually or later -->
+      <tr><td>2025</td><td>Static value</td></tr>
+    </table>
+
     <div class="tip">
       💸 Tip this project (USDC):<br>
       <code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
   <script>
     const form = document.getElementById("goldForm");
     const resultDiv = document.getElementById("result");
@@ -93,8 +101,6 @@
       e.preventDefault();
       const dateInput = document.getElementById("date").value;
       const amount = document.getElementById("amount").value;
-
-      // Convert yyyy-mm-dd to dd/mm/yyyy
       const date = dateInput.split("-").reverse().join("/");
 
       resultDiv.innerHTML = "⏳ Calculating...";
@@ -104,17 +110,10 @@
         const data = await response.json();
 
         if (response.ok) {
-          let historyHtml = "<h3>📈 Last 10 Years (Jan 1)</h3><table><tr><th>Year</th><th>TRY/g</th></tr>";
-          data.history.forEach(h => {
-            historyHtml += `<tr><td>${h.year}</td><td>${h.price_per_gram.toFixed(2)}</td></tr>`;
-          });
-          historyHtml += "</table>";
-
           resultDiv.innerHTML = `
             <p>📅 ${data.date}</p>
-            <p>💎 ${data.price_per_gram.toFixed(2)} TRY / g</p>
-            <p>⚖️ ${data.grams.toFixed(4)} g (+3%)</p>
-            ${historyHtml}
+            <p>💎 ${data.price_per_gram.toFixed(2)} TRY / g (+3%)</p>
+            <p>⚖️ ${data.grams.toFixed(4)} g</p>
           `;
         } else {
           resultDiv.innerHTML = `<p style="color:red;">❌ ${data.detail}</p>`;
