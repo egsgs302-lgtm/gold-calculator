@@ -1,63 +1,61 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
-import pandas as pd
 from datetime import datetime, timedelta
+import os
 
 app = FastAPI()
 
-# (Optional) Allow CORS if you ever host frontend separately
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Serve the frontend HTML file
+# Serve the frontend
 @app.get("/")
 def home():
-    return FileResponse("index.html")  # works because file is in same folder
+    return FileResponse("index.html")
+
+
+def get_closest_price(ticker, dt):
+    """Find closest available price within 7 days back."""
+    for i in range(7):
+        check_date = dt - timedelta(days=i)
+        data = ticker.history(
+            start=check_date.strftime("%Y-%m-%d"),
+            end=(check_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        )
+        if not data.empty:
+            return data["Close"].iloc[0], check_date.strftime("%d/%m/%Y")
+    raise HTTPException(status_code=404, detail="No data found within 7 days")
+
 
 @app.get("/gold")
 def get_gold_price(date: str, amount_try: float):
-    """
-    Calculate how many grams of gold you could buy with a given amount of TRY
-    on a specific date. Date must be in dd/mm/yyyy format.
-    """
     try:
         dt = datetime.strptime(date, "%d/%m/%Y")
 
-        # 1. Gold price in USD per ounce (Gold Futures)
-        gold = yf.Ticker("GC=F")
-        gold_data = gold.history(
-            start=dt.strftime("%Y-%m-%d"),
-            end=(dt + timedelta(days=1)).strftime("%Y-%m-%d")
-        )
-        if gold_data.empty:
-            raise HTTPException(status_code=404, detail="No gold data for this date")
-        gold_usd_per_oz = gold_data["Close"].iloc[0]
+        # Gold price (USD/oz)
+        gold_price, gold_date = get_closest_price(yf.Ticker("GC=F"), dt)
 
-        # 2. USD/TRY exchange rate
-        usdtry = yf.Ticker("USDTRY=X")
-        usdtry_data = usdtry.history(
-            start=dt.strftime("%Y-%m-%d"),
-            end=(dt + timedelta(days=1)).strftime("%Y-%m-%d")
-        )
-        if usdtry_data.empty:
-            raise HTTPException(status_code=404, detail="No USD/TRY data for this date")
-        usdtry_rate = usdtry_data["Close"].iloc[0]
+        # USD/TRY exchange
+        usdtry_price, usdtry_date = get_closest_price(yf.Ticker("USDTRY=X"), dt)
 
-        # 3. Convert to TRY per gram
-        price_per_gram = (gold_usd_per_oz / 31.1035) * usdtry_rate
-        grams = amount_try / price_per_gram
+        # Convert to TRY/g
+        price_per_gram = (gold_price / 31.1035) * usdtry_price
+
+        # Apply +3% markup
+        grams = (amount_try * 1.03) / price_per_gram
+
+        # Build 10-year history (Jan 1 each year)
+        history = []
+        for year in range(dt.year - 10, dt.year + 1):
+            jan1 = datetime(year, 1, 1)
+            g_price, g_date = get_closest_price(yf.Ticker("GC=F"), jan1)
+            u_price, u_date = get_closest_price(yf.Ticker("USDTRY=X"), jan1)
+            ppg = (g_price / 31.1035) * u_price
+            history.append({"year": year, "date": g_date, "price_per_gram": ppg})
 
         return {
             "date": date,
             "grams": grams,
-            "price_per_gram": price_per_gram
+            "price_per_gram": price_per_gram,
+            "history": history
         }
 
     except ValueError:
