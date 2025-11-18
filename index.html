@@ -55,7 +55,7 @@
     .scrolling-text span {
       display: inline-block;
       padding-left: 100%;
-      animation: scroll 20s linear infinite;
+      animation: scroll 25s linear infinite;
     }
     @keyframes scroll {
       0% { transform: translate(0, 0); }
@@ -81,9 +81,6 @@
     </form>
     <div id="result"></div>
 
-    <div class="scrolling-text">
-      <span>📈 Gold Prices (Jan 1, 2006–2025): 2006: 45.12 TRY/g • 2007: 52.34 • 2008: 61.78 • 2009: 75.23 • 2010: 88.45 • 2011: 102.67 • 2012: 115.89 • 2013: 110.34 • 2014: 120.56 • 2015: 130.78 • 2016: 145.23 • 2017: 155.67 • 2018: 165.89 • 2019: 180.45 • 2020: 210.56 • 2021: 250.78 • 2022: 300.12 • 2023: 350.34 • 2024: 420.56 • 2025: 500.78</span>
-    </div>
 
     <div class="usdc">
       💸 USDC: <code>0x37636e8cb438a33a0280e1fdb00162e80b15721e</code>
@@ -101,7 +98,7 @@
       const amount = document.getElementById("amount").value;
       const date = dateInput.split("-").reverse().join("/");
 
-      resultDiv.innerHTML = "⏳ Calculating...";
+      resultDiv.innerHTML = "⏳ ...";
 
       try {
         const response = await fetch(`/gold?date=${encodeURIComponent(date)}&amount_try=${amount}`);
@@ -109,9 +106,7 @@
 
         if (response.ok) {
           resultDiv.innerHTML = `
-            <p>📅 Requested: ${data.requested_date}</p>
-            <p>📅 Gold data from: ${data.gold_found_date}</p>
-            <p>📅 USD/TRY data from: ${data.usdtry_found_date}</p>
+            <p>📅 Date used: ${data.date}</p>
             <p>⚖️ ${data.grams.toFixed(2)} g</p>
           `;
         } else {
