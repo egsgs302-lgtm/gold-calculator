@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gold Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #fdf6e3, #f5deb3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 320px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #444;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .form-group i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+    input {
+      width: 100%;
+      padding: 10px 10px 10px 35px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 12px;
+      background: #d4af37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #b8860b;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fdf6e3;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💰 Gold Calculator</h1>
+    <form id="goldForm">
+      <div class="form-group">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="date" id="date" required>
+      </div>
+      <div class="form-group">
+        <i class="fas fa-coins"></i>
+        <input type="number" id="amount" placeholder="TRY" required>
+      </div>
+      <button type="submit"><i class="fas fa-calculator"></i></button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("goldForm");
+    const resultDiv = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const date = document.getElementById("date").value.split("-").reverse().join("/");
+      const amount = document.getElementById("amount").value;
+
+      resultDiv.innerHTML = "⏳ Calculating...";
+
+      try {
+        const response = await fetch(`/gold?date=${encodeURIComponent(date)}&amount_try=${amount}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `
+            <p>📅 ${data.date}</p>
+            <p>💎 ${data.price_per_gram.toFixed(2)} TRY / g</p>
+            <p>⚖️ ${data.grams.toFixed(4)} g</p>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color:red;">❌ ${data.detail}</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">❌ Request failed: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
